@@ -22,14 +22,14 @@ class _GlowCircle extends State<GlowCircle>
   @override
   void initState() {
     animationcontroller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 10));
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
     //here we have to vash vsync argument, there for we use "with SingleTickerProviderStateMixin" above
     //vsync is the ThickerProvider, and set duration of animation
 
     animationcontroller.repeat();
     //repeat the animation controller
 
-    animation = Tween<double>(begin: 0, end: 250).animate(animationcontroller);
+    animation = Tween<double>(begin: 0, end: 800).animate(animationcontroller);
     //set the begin value and end value, we will use this value for height and width of circle
 
     animation.addListener(() {
@@ -48,23 +48,46 @@ class _GlowCircle extends State<GlowCircle>
 
   @override
   Widget build(BuildContext context) {
+    final sizeX = MediaQuery.of(context).size.width;
+    final sizeY = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(
-          title: const Text("Simple Concept of Animation"),
-          backgroundColor: Colors.redAccent),
-      body: Container(
-        padding: const EdgeInsets.all(20),
-        alignment: Alignment.center,
-        height: 300,
-        child: Container(
-          decoration: const BoxDecoration(
-              shape: BoxShape.circle, //making box to circle
-              color: Colors.deepOrangeAccent //background of container
-              ),
-          height: animation.value, //value from animation controller
-          width: animation.value, //value from animation controller
-        ),
-      ),
-    );
+        appBar: AppBar(
+            title: const Text("Simple Concept of Animation"),
+            backgroundColor: Colors.redAccent),
+        body: Container(
+            width: sizeX,
+            height: sizeY,
+            child: Stack(
+              //fit: StackFit.expand,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle, //making box to circle
+                      color: Colors.purple
+                          .withOpacity(0.5) //background of container
+                      ),
+                  height: animation.value, //value from animation controller
+                  width: animation.value, //value from animation controller
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle, //making box to circle
+                    color:
+                        Colors.amber.withOpacity(0.5), //background of container
+                  ),
+                  height: 60.0 * (3 - 0), //value from animation controller
+                  width: 60.0 * (3 - 0), //value from animation controller
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle, //making box to circle
+                      color: Colors.deepOrangeAccent
+                          .withOpacity(0.5) //background of container
+                      ),
+                  height: 60.0, //value from animation controller
+                  width: 60.0, //value from animation controller
+                )
+              ],
+            )));
   }
 }
