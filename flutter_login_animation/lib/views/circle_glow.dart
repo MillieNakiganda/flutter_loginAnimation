@@ -1,41 +1,34 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-// import 'package:flutter/widgets.dart';
 
-class GlowCircle extends StatefulWidget {
-  const GlowCircle({Key? key}) : super(key: key);
+class Planets3 extends StatefulWidget {
+  const Planets3({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
-    return _GlowCircle();
-  }
+  // ignore: library_private_types_in_public_api
+  _Planets3State createState() => _Planets3State();
 }
 
-class _GlowCircle extends State<GlowCircle>
-    with SingleTickerProviderStateMixin {
-  //use "with SingleThickerProviderStateMixin" at last of class declaration
-  //where you have to pass "vsync" argument, add this
-
-  late Animation<double> animation; //animation variable for circle 1
-  late AnimationController
-      animationcontroller; //animation controller variable circle 1
+class _Planets3State extends State<Planets3> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late AnimationController _controller1;
+  late Size size;
 
   @override
   void initState() {
-    animationcontroller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 1));
-    //here we have to vash vsync argument, there for we use "with SingleTickerProviderStateMixin" above
-    //vsync is the ThickerProvider, and set duration of animation
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    );
 
-    animationcontroller.repeat();
-    //repeat the animation controller
+    _controller1 = AnimationController(
+      vsync: this,
+      lowerBound: 0.5,
+      duration: const Duration(seconds: 5),
+    )..repeat();
 
-    animation = Tween<double>(begin: 0, end: 800).animate(animationcontroller);
-    //set the begin value and end value, we will use this value for height and width of circle
-
-    animation.addListener(() {
-      setState(() {});
-      //set animation listiner and set state to update UI on every animation value change
-    });
+    _controller.reset();
+    _controller.repeat();
 
     super.initState();
   }
@@ -43,51 +36,131 @@ class _GlowCircle extends State<GlowCircle>
   @override
   void dispose() {
     super.dispose();
-    animationcontroller.dispose(); //destory anmiation to free memory on last
+    _controller1.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final sizeX = MediaQuery.of(context).size.width;
-    final sizeY = MediaQuery.of(context).size.height;
+    size = MediaQuery.of(context).size;
     return Scaffold(
-        appBar: AppBar(
-            title: const Text("Simple Concept of Animation"),
-            backgroundColor: Colors.redAccent),
-        body: Container(
-            width: sizeX,
-            height: sizeY,
-            child: Stack(
-              //fit: StackFit.expand,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle, //making box to circle
-                      color: Colors.purple
-                          .withOpacity(0.5) //background of container
+      backgroundColor: const Color(0XffFEFEFE), //
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0.0,
+      ),
+      body: AnimatedContainer(
+        color: Colors.white,
+        duration: const Duration(milliseconds: 300),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 150, 500, 10),
+              child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, snapshot) {
+                    return CustomPaint(
+                      painter: AtomPaint(
+                        value: _controller.value,
                       ),
-                  height: animation.value, //value from animation controller
-                  width: animation.value, //value from animation controller
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle, //making box to circle
-                    color:
-                        Colors.amber.withOpacity(0.5), //background of container
-                  ),
-                  height: 60.0 * (3 - 0), //value from animation controller
-                  width: 60.0 * (3 - 0), //value from animation controller
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle, //making box to circle
-                      color: Colors.deepOrangeAccent
-                          .withOpacity(0.5) //background of container
-                      ),
-                  height: 60.0, //value from animation controller
-                  width: 60.0, //value from animation controller
-                )
-              ],
-            )));
+                    );
+                  }),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Transform.translate(
+                offset: const Offset(-160, 360),
+                child: _buildSun(),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSun() {
+    return AnimatedBuilder(
+      animation: CurvedAnimation(parent: _controller1, curve: Curves.bounceOut),
+      builder: (context, child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            _buildContainer(1000 * _controller1.value),
+            _buildContainer(1200 * _controller1.value),
+            _buildContainer(1400 * _controller1.value),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildContainer(double radius) {
+    return CustomPaint(
+      size: Size(radius, radius),
+      painter: CirclePainter(),
+    );
+  }
+}
+
+class CirclePainter extends CustomPainter {
+  var wavePaint = Paint()
+    ..color = const Color(0xff0D2C5E).withOpacity(0.5)
+    ..style = PaintingStyle.fill
+    ..strokeWidth = 2.0
+    ..isAntiAlias = true;
+  @override
+  void paint(Canvas canvas, Size size) {
+    double centerX = size.width / 2.0;
+    double centerY = size.height / 2.0;
+    canvas.drawCircle(Offset(centerX, centerY), 300.0, wavePaint);
+  }
+
+  @override
+  bool shouldRepaint(CirclePainter oldDelegate) {
+    return false;
+  }
+}
+
+class AtomPaint extends CustomPainter {
+  AtomPaint({
+    required this.value,
+  });
+
+  final double value;
+
+  final Paint _axisPaint = Paint()
+    ..color = const ui.Color(0xff4275BB).withOpacity(0.5)
+    ..strokeWidth = 2.0
+    ..style = PaintingStyle.fill;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    drawAxis(value, canvas, 200,
+        Paint()..color = const ui.Color(0xffFCA400).withOpacity(0.5));
+  }
+
+  drawAxis(double value, Canvas canvas, double radius, Paint paint) {
+    var firstAxis = getCirclePath(radius);
+    canvas.drawPath(firstAxis, _axisPaint);
+    ui.PathMetrics pathMetrics = firstAxis.computeMetrics();
+    for (ui.PathMetric pathMetric in pathMetrics) {
+      Path extractPath = pathMetric.extractPath(
+        0.0,
+        pathMetric.length * value,
+      );
+      try {
+        var metric = extractPath.computeMetrics().first;
+        final offset = metric.getTangentForOffset(metric.length)?.position;
+        canvas.drawCircle(offset!, 20.0, paint);
+      } catch (e) {}
+    }
+  }
+
+  Path getCirclePath(double radius) => Path()
+    ..addOval(Rect.fromCircle(center: const Offset(0, 0), radius: radius));
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
   }
 }
